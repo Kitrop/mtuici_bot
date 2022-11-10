@@ -17,6 +17,7 @@ conn = psycopg2.connect(
 
 cursor = conn.cursor()
 
+#
 date = datetime.datetime.now()
 dt = datetime.date(date.year, date.month, date.day)
 wek = dt.isocalendar()[1]
@@ -32,73 +33,91 @@ else:
 @bot.message_handler(commands=['start'])
 def start(message):
     keyboard = types.ReplyKeyboardMarkup(resize_keyboard=True)
-    keyboard.row("Хочу", "/help", "Расписание по дням недели")
+    keyboard.row("Хочу", "/help", "Расписание по дням недели", "/week")
     bot.send_message(message.chat.id, 'Здравствуйте! Хотите узнать свежую информацию о МТУСИ?', reply_markup=keyboard)
 
 
 # /help
 @bot.message_handler(commands=['help'])
 def start_message(message):
-    bot.send_message(message.chat.id, 'Я умею:'
-                                      '\nвыводить расписание на каждый день недели, выводить расписание на текущую неделю, выводить расписание на следующую неделю')
+    bot.send_message(message.chat.id, 'Я могу:'
+                                      '\nвыводить расписание на каждый день недели, '
+                                      '\nвыводить расписание на текущую неделю /week,'
+                                      '\nвыводить расписание на следующую неделю /nextweek',)
 
-
+# This week
 @bot.message_handler(commands=['week'])
 def week(message):
-    cursor.execute("SELECT * FROM timetable_odd")
+    # Понедельник
+    monday = 'Понедельник:\n'
+    cursor.execute("SELECT * FROM timetable_odd WHERE day='Понедельник';")
     records = list(cursor.fetchall())
 
-    text = ''
-    mondayCount = 0
-    monday = f'=======================\n Понедельник:\n'
+    if len(records) == 0:
+        bot.send_message(message.chat.id, monday + '<Занятий нет>')
+    else:
+        for i in range(len(records)):
+            monday += f"<{records[i][2]}> <{records[i][3]}> <{records[i][4]}> \n"
+            monday += "\n"
 
-    tuesdayCount = 0
-    tuesday = f'=======================\n Вторник:\n'
+    # Вторник
+    tuesday = 'Вторник:\n'
+    cursor.execute("SELECT * FROM timetable_odd WHERE day='Вторник';")
+    records = list(cursor.fetchall())
+    if len(records) == 0:
+        bot.send_message(message.chat.id, tuesday + '<Занятий нет>')
+    else:
+        for i in range(len(records)):
+            tuesday += f"<{records[i][2]}> <{records[i][3]}> <{records[i][4]}> \n"
+            tuesday += "\n"
 
-    wednesdayCount = 0
-    wednesday = f'=======================\n Среда:\n'
+    # Среда
+    wednesday = 'Среда:\n'
+    cursor.execute("SELECT * FROM timetable_odd WHERE day='Среда';")
+    records = list(cursor.fetchall())
+    if len(records) == 0:
+        bot.send_message(message.chat.id, wednesday + '<Занятий нет>')
+    else:
+        for i in range(len(records)):
+            wednesday += f"<{records[i][2]}> <{records[i][3]}> <{records[i][4]}> \n"
+            wednesday += "\n"
 
-    thursCount = 0
-    thurs = f'=======================\n Четверг:\n'
+    # Четверг
+    thurs = 'Четверг:\n'
+    cursor.execute("SELECT * FROM timetable_odd WHERE day='Четверг';")
+    records = list(cursor.fetchall())
+    if len(records) == 0:
+        bot.send_message(message.chat.id, thurs + '<Занятий нет>')
+    else:
+        for i in range(len(records)):
+            thurs += f"<{records[i][2]}> <{records[i][3]}> <{records[i][4]}> \n"
+            thurs += "\n"
 
-    fridayCount = 0
-    friday = f'=======================\n Пятница:\n'
+    # Пятница
+    friday = 'Пятница:\n'
+    cursor.execute("SELECT * FROM timetable_odd WHERE day='Пятница';")
+    records = list(cursor.fetchall())
+    print(len(records))
+    if len(records) == 0 or not records:
+        print('len 0')
+        bot.send_message(message.chat.id, friday + '<Занятий нет>')
+    else:
+        for i in range(len(records)):
+            friday += f"<{records[i][2]}> <{records[i][3]}> <{records[i][4]}> \n"
+            friday += "\n"
 
-    saturdayCount = 0
-    saturday = f'=======================\n Суббота:\n'
-
-    for i in range(len(records)):
-        if records[i][1] == 'Понедельник':
-            mondayCount += 1
-        if records[i][1] == 'Вторник':
-            tuesdayCount += 1
-        if records[i][1] == 'Среда':
-            wednesdayCount += 1
-        if records[i][1] == 'Четверг':
-            thursCount += 1
-        if records[i][1] == 'Пятница':
-            fridayCount += 1
-        if records[i][1] == 'Суббота':
-            saturdayCount += 1
-    for j in range(mondayCount):
-        monday += f' <{records[j][2]}> <{records[j][3]}> <{records[j][4]}> \n '
-    for k in range(tuesdayCount):
-        tuesday += f' <{records[k][2]}> <{records[k][3]}> <{records[k][4]}> \n '
-    for c in range(wednesdayCount):
-        wednesday += f' <{records[c][2]}> <{records[c][3]}> <{records[c][4]}> \n '
-    for v in range(thursCount):
-        thurs += f' <{records[v][2]}> <{records[v][3]}> <{records[v][4]}> \n '
-    for b in range(fridayCount):
-        friday += f' <{records[b][2]}> <{records[b][3]}> <{records[b][4]}> \n '
-    for n in range(saturdayCount):
-        saturday += f' <{records[n][2]}> <{records[n][3]}> <{records[n][4]}> \n '
+    # Суббота
+    saturday = 'Cуббота:\n'
+    cursor.execute("SELECT * FROM timetable_odd WHERE day='Суббота';")
+    records = list(cursor.fetchall())
+    if len(records) == 0:
+        bot.send_message(message.chat.id, saturday + '<Занятий нет>')
+    else:
+        for i in range(len(records)):
+            saturday += f"<{records[i][2]}> <{records[i][3]}> <{records[i][4]}> \n"
+            saturday += "\n"
 
     bot.send_message(message.chat.id, monday + tuesday + wednesday + thurs + friday + saturday)
-
-    # 1 - день
-    # 2 - предмет
-    # 3 - кабинет
-    # 4 - время
 
 
 @bot.message_handler(content_types=['text'])
@@ -126,6 +145,7 @@ def day(message):
                 text += f"<{records[i][2]}> <{records[i][3]}> <{records[i][4]}> \n"
                 text += "\n"
             bot.send_message(message.chat.id, text)
+
 
     # Вторник
     elif message.text.lower() == "вторник":
